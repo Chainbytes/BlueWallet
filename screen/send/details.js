@@ -57,6 +57,7 @@ const SendDetails = () => {
   const navigation = useNavigation();
   const { name, params: routeParams } = useRoute(); // FIXME refactor to use walletID
   const scrollView = useRef();
+  const scrollIndex = useRef();
   const { colors } = useTheme();
 
   // state
@@ -68,7 +69,6 @@ const SendDetails = () => {
   const [isFeeSelectionModalVisible, setIsFeeSelectionModalVisible] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [isTransactionReplaceable, setIsTransactionReplaceable] = useState(false);
-  const [recipientsScrollIndex, setRecipientsScrollIndex] = useState(0);
   const [addresses, setAddresses] = useState([]);
   const [units, setUnits] = useState([]);
   const [memo, setMemo] = useState('');
@@ -343,8 +343,8 @@ const SendDetails = () => {
     const unitsCopy = [...units];
     const dataWithoutSchema = data.replace('bitcoin:', '').replace('BITCOIN:', '');
     if (wallet.isAddressValid(dataWithoutSchema)) {
-      recipients[recipientsScrollIndex].address = dataWithoutSchema;
-      unitsCopy[recipientsScrollIndex] = amountUnit;
+      recipients[scrollIndex.current].address = dataWithoutSchema;
+      unitsCopy[scrollIndex.current] = amountUnit;
       setAddresses(recipients);
       setUnits(unitsCopy);
       setIsLoading(false);
@@ -368,10 +368,10 @@ const SendDetails = () => {
 
     console.log('options', options);
     if (btcAddressRx.test(address) || address.startsWith('bc1') || address.startsWith('BC1')) {
-      unitsCopy[recipientsScrollIndex] = BitcoinUnit.BTC; // also resetting current unit to BTC
-      recipients[recipientsScrollIndex].address = address;
-      recipients[recipientsScrollIndex].amount = options.amount;
-      recipients[recipientsScrollIndex].amountSats = new BigNumber(options.amount).multipliedBy(100000000).toNumber();
+      unitsCopy[scrollIndex.current] = BitcoinUnit.BTC; // also resetting current unit to BTC
+      recipients[scrollIndex.current].address = address;
+      recipients[scrollIndex.current].amount = options.amount;
+      recipients[scrollIndex.current].amountSats = new BigNumber(options.amount).multipliedBy(100000000).toNumber();
       setAddresses(recipients);
       setMemo(options.label || options.message);
       setUnits(unitsCopy);
@@ -767,8 +767,8 @@ const SendDetails = () => {
   };
 
   const handleRemoveRecipient = async () => {
-    const last = recipientsScrollIndex === addresses.length - 1;
-    addresses.splice(recipientsScrollIndex, 1);
+    const last = scrollIndex.current === addresses.length - 1;
+    addresses.splice(scrollIndex.current, 1);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setAddresses([...addresses]);
     setOptionsVisible(false);
@@ -842,7 +842,7 @@ const SendDetails = () => {
     const contentOffset = e.nativeEvent.contentOffset;
     const viewSize = e.nativeEvent.layoutMeasurement;
     const index = Math.floor(contentOffset.x / viewSize.width);
-    setRecipientsScrollIndex(index);
+    scrollIndex.current = index;
   };
 
   const handleRecipientsScroll = e => {
@@ -850,7 +850,7 @@ const SendDetails = () => {
     const contentOffset = e.nativeEvent.contentOffset;
     const viewSize = e.nativeEvent.layoutMeasurement;
     const index = Math.floor(contentOffset.x / viewSize.width);
-    setRecipientsScrollIndex(index);
+    scrollIndex.current = index;
   };
 
   const onUseAllPressed = () => {
@@ -863,7 +863,7 @@ const SendDetails = () => {
           text: loc._.ok,
           onPress: async () => {
             Keyboard.dismiss();
-            const recipient = addresses[recipientsScrollIndex];
+            const recipient = addresses[scrollIndex.current];
             recipient.amount = BitcoinUnit.MAX;
             recipient.amountSats = BitcoinUnit.MAX;
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

@@ -57,7 +57,7 @@ const SendDetails = () => {
   const navigation = useNavigation();
   const { name, params: routeParams } = useRoute(); // FIXME refactor to use walletID
   const scrollView = useRef();
-  const scrollIndex = useRef();
+  const scrollIndex = useRef(0);
   const { colors } = useTheme();
 
   // state

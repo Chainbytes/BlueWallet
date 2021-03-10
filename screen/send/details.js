@@ -447,12 +447,12 @@ const SendDetails = () => {
     const lutxo = utxo || wallet.getUtxo();
     console.log({ requestedSatPerByte, utxo });
 
-    let targets = [];
+    const targets = [];
     for (const transaction of addresses) {
       if (transaction.amount === BitcoinUnit.MAX) {
-        // single output with MAX
-        targets = [{ address: transaction.address }];
-        break;
+        // output with MAX
+        targets.push({ address: transaction.address });
+        continue;
       }
       const value = parseInt(transaction.amountSats);
       if (value > 0) {
